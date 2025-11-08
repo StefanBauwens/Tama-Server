@@ -1,7 +1,5 @@
-#include <Arduino.h>
-
 /*
- * TamaLIB - A hardware agnostic Tamagotchi P1 emulation library
+ * TamaLIB - A hardware agnostic first-gen Tamagotchi emulation library
  *
  * Copyright (C) 2021 Jean-Christophe Rona <jc@rona.fr>
  *
@@ -19,17 +17,36 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#ifndef _HAL_TYPES_H_
-#define _HAL_TYPES_H_
+#ifndef _HW_H_
+#define _HW_H_
 
-typedef unsigned char bool_t;
-typedef unsigned char u4_t;
-typedef unsigned char u5_t;
-typedef unsigned char u8_t;
-typedef unsigned short u12_t;
-typedef unsigned short u13_t;
-typedef uint32_t u32_t;
-//typedef unsigned int u32_t;
-typedef unsigned int timestamp_t; // WARNING: Must be an unsigned type to properly handle wrapping (u32 wraps in around 1h11m when expressed in us)
+#include "hal.h"
 
-#endif /* _HAL_TYPES_H_ */
+#define LCD_WIDTH			32
+#define LCD_HEIGHT			16
+
+#define ICON_NUM			8
+
+typedef enum {
+	BTN_STATE_RELEASED = 0,
+	BTN_STATE_PRESSED,
+} btn_state_t;
+
+typedef enum {
+	BTN_LEFT = 0,
+	BTN_MIDDLE,
+	BTN_RIGHT,
+	BTN_TAP,
+} button_t;
+
+
+bool_t hw_init(void);
+void hw_release(void);
+
+void hw_set_lcd_pin(u8_t seg, u8_t com, u8_t val);
+void hw_set_button(button_t btn, btn_state_t state);
+
+void hw_set_buzzer_freq(u4_t freq);
+void hw_enable_buzzer(bool_t en);
+
+#endif /* _HW_H_ */
