@@ -62,5 +62,6 @@ void tamalib_set_exec_mode(exec_mode_t mode);
  */
 void tamalib_step(void);
 void tamalib_mainloop(void);
+void tamalib_frame(void); // use in arduino loop
 
 #endif /* _TAMALIB_H_ */

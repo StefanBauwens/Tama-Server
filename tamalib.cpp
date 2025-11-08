@@ -135,3 +135,15 @@ void tamalib_mainloop(void)
 		}
 	}
 }
+
+void tamalib_frame(void)
+{
+  g_hal->handler();
+  tamalib_step();
+  /* Update the screen @ g_framerate fps */
+  timestamp_t ts = g_hal->get_timestamp();
+  if (ts - screen_ts >= ts_freq/g_framerate) {
+    screen_ts = ts;
+    g_hal->update_screen();
+  }
+}

@@ -40,13 +40,30 @@ static timestamp_t hal_get_timestamp(void) //TODO test
 
 static void hal_sleep_until(timestamp_t ts) //this makes the time be accurate
 {
-  delayMicroseconds(ts - hal_get_timestamp()); //TODO test
+  //delayMicroseconds(ts - hal_get_timestamp()); //TODO test
   //while((int) (ts - hal_get_timestamp()) > 0);
+  while(micros() < ts) {}
 }
 
 static void hal_update_screen(void)
 {
   // TODO: tell the system to redraw screen
+  for (int y = 0; y < LCD_HEIGHT; y++) {
+    for (int x = 0; x < LCD_WIDTH; x++) {
+      if (matrix_buffer[y][x]) {
+        Serial.print("█");
+      } else {
+        Serial.print("░");
+      }
+    }
+    Serial.println(); // new line after each row
+  }
+  Serial.println("...");
+  
+  //TODO auto release after x frames instead of this
+  tamalib_set_button(BTN_LEFT, BTN_STATE_RELEASED);
+  tamalib_set_button(BTN_MIDDLE, BTN_STATE_RELEASED);
+  tamalib_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
 }
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
@@ -72,8 +89,27 @@ static void hal_play_frequency(bool_t en)
 
 static int hal_handler(void)
 {
-  return 0;
-  //Not implemented as we're not using the tamalib_mainloop()
+  if(Serial.available() > 0)
+  {
+    char incomingVal = Serial.read();
+    Serial.print(incomingVal);
+    if(incomingVal == 'a')
+    {
+      Serial.print("left");
+      tamalib_set_button(BTN_LEFT, BTN_STATE_PRESSED);
+    }
+    if(incomingVal == 'b')
+    {
+      Serial.print("middle");
+      tamalib_set_button(BTN_MIDDLE, BTN_STATE_PRESSED);
+    }
+    if(incomingVal == 'c')
+    {
+      Serial.print("right");
+      tamalib_set_button(BTN_RIGHT, BTN_STATE_PRESSED);
+    }
+  }
+  return 0; //TODO
 }
 
 static hal_t hal = {
@@ -93,11 +129,14 @@ static hal_t hal = {
 };
 
 void setup() {
+  Serial.begin(115200);
+
+  delay(2000);
+  Serial.println("setup");
   tamalib_register_hal(&hal);
   tamalib_init(g_program, NULL, 1000000);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  tamalib_mainloop();
+  tamalib_frame();
 }
