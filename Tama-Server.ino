@@ -8,7 +8,8 @@
 
 // screen
 static bool pixelsChanged = false;
-static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
+//static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
+static char matrixBufferStr[] = "0000000000000000000000000000000000000000000000000000000000000000";
 static bool_t icon_buffer[ICON_NUM] = {0};
 
 // webserver port 80
@@ -19,16 +20,16 @@ AsyncWebSocket ws("/ws");
 
 void notifyClients()
 {
-  char buffer[2 + (LCD_HEIGHT * LCD_WIDTH)];
+  /*  char buffer[2 + (LCD_HEIGHT * LCD_WIDTH)];
   int pos = 0;
   for (int y = 0; y < LCD_HEIGHT; y++) {
     for (int x = 0; x < LCD_WIDTH; x++) {
       buffer[pos++] = matrix_buffer[y][x] ? '1' : '0';
     }
   }
-  buffer[pos] = '\0';
+  buffer[pos] = '\0';*/
     
-  ws.textAll(buffer); //TODO test
+  ws.textAll(matrixBufferStr); //TODO test
 }
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
@@ -132,17 +133,39 @@ static void hal_update_screen(void)
   }
   Serial.println("...");*/
 
+  int x = 0;
+  for(int i = 0; i < 64; i++) 
+  {
+    int y = (i * 8) / LCD_WIDTH;
+    char character = matrixBufferStr[i];
+
+    for(int b = 7; b >= 0; b--)
+    {
+      int val = bitRead(character, b);
+      if (val) {
+        Serial.print("█");
+      } else {
+        Serial.print("░");
+      }
+      x++;
+      if (x == LCD_WIDTH) 
+      {
+        Serial.println(); // new line after each row
+        x = 0;
+      }
+    }
+  }
+
   notifyClients();
-  
-  //TODO auto release after x frames instead of this
-  //tamalib_set_button(BTN_LEFT, BTN_STATE_RELEASED);
-  //tamalib_set_button(BTN_MIDDLE, BTN_STATE_RELEASED);
-  //tamalib_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
 }
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 {
-  matrix_buffer[y][x] = val;
+  int charIndex = ((y * LCD_WIDTH) + x) / 8; // auto floors
+  int rest = ((y * LCD_WIDTH) + x) % 8;
+  char character = matrixBufferStr[charIndex];
+  character = bitWrite(character, 7 - rest, val);
+  matrixBufferStr[charIndex] = character;
   pixelsChanged = true;
 }
 
