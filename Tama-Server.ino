@@ -1,10 +1,74 @@
 #include "tamalib.h"
 #include "rom.h"
+#include "secrets.h"
+
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 // screen
 static bool pixelsChanged = false;
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH] = {{0}};
 static bool_t icon_buffer[ICON_NUM] = {0};
+
+// webserver port 80
+AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+
+/* WEBSOCKET STUFF */
+
+void notifyClients()
+{
+  char buffer[2 + (LCD_HEIGHT * LCD_WIDTH)];
+  int pos = 0;
+  for (int y = 0; y < LCD_HEIGHT; y++) {
+    for (int x = 0; x < LCD_WIDTH; x++) {
+      buffer[pos++] = matrix_buffer[y][x] ? '1' : '0';
+    }
+  }
+  buffer[pos] = '\0';
+    
+  ws.textAll(buffer); //TODO test
+}
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+    data[len] = 0;
+    if (strcmp((char*)data, "a") == 0) { //TODO
+      tamalib_set_button(BTN_LEFT, BTN_STATE_PRESSED);
+    }
+    if (strcmp((char*)data, "b") == 0) { //TODO
+      tamalib_set_button(BTN_MIDDLE, BTN_STATE_PRESSED);
+    }
+    if (strcmp((char*)data, "c") == 0) { //TODO
+      tamalib_set_button(BTN_RIGHT, BTN_STATE_PRESSED);
+    }
+  }
+}
+
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+             void *arg, uint8_t *data, size_t len) {
+  switch (type) {
+    case WS_EVT_CONNECT:
+      Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      break;
+    case WS_EVT_DISCONNECT:
+      Serial.printf("WebSocket client #%u disconnected\n", client->id());
+      break;
+    case WS_EVT_DATA:
+      handleWebSocketMessage(arg, data, len);
+      break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+      break;
+  }
+}
+
+void initWebSocket() {
+  ws.onEvent(onEvent);
+  server.addHandler(&ws);
+}
 
 /*HAL T FUNCTIONS*/
 
@@ -40,13 +104,12 @@ static timestamp_t hal_get_timestamp(void) //TODO test
 
 static void hal_sleep_until(timestamp_t ts) //this makes the time be accurate
 {
-  //delayMicroseconds(ts - hal_get_timestamp()); //TODO test
-  //while((int) (ts - hal_get_timestamp()) > 0);
   while(micros() < ts) {}
 }
 
 static void hal_update_screen(void)
 {
+  /*
   // TODO: tell the system to redraw screen
   for (int y = 0; y < LCD_HEIGHT; y++) {
     for (int x = 0; x < LCD_WIDTH; x++) {
@@ -58,7 +121,9 @@ static void hal_update_screen(void)
     }
     Serial.println(); // new line after each row
   }
-  Serial.println("...");
+  Serial.println("...");*/
+
+  notifyClients();
   
   //TODO auto release after x frames instead of this
   tamalib_set_button(BTN_LEFT, BTN_STATE_RELEASED);
@@ -131,12 +196,27 @@ static hal_t hal = {
 void setup() {
   Serial.begin(115200);
 
-  delay(2000);
+  //delay(2000);
+  
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi..");
+  }
+
+  initWebSocket();
+  server.begin();
+
+  // Print ESP Local IP Address
+  Serial.println(WiFi.localIP());
+  
   Serial.println("setup");
   tamalib_register_hal(&hal);
   tamalib_init(g_program, NULL, 1000000);
 }
 
 void loop() {
+  ws.cleanupClients(); //TODO make it more efficient by running this only every second or so
   tamalib_frame();
 }
