@@ -35,14 +35,23 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
     data[len] = 0;
-    if (strcmp((char*)data, "a") == 0) { //TODO
+    if (strcmp((char*)data, "a-press") == 0) {
       tamalib_set_button(BTN_LEFT, BTN_STATE_PRESSED);
     }
-    if (strcmp((char*)data, "b") == 0) { //TODO
+    if (strcmp((char*)data, "b-press") == 0) {
       tamalib_set_button(BTN_MIDDLE, BTN_STATE_PRESSED);
     }
-    if (strcmp((char*)data, "c") == 0) { //TODO
+    if (strcmp((char*)data, "c-press") == 0) {
       tamalib_set_button(BTN_RIGHT, BTN_STATE_PRESSED);
+    }
+    if (strcmp((char*)data, "a-release") == 0) {
+      tamalib_set_button(BTN_LEFT, BTN_STATE_RELEASED);
+    }
+    if (strcmp((char*)data, "b-release") == 0) {
+      tamalib_set_button(BTN_MIDDLE, BTN_STATE_RELEASED);
+    }
+    if (strcmp((char*)data, "c-release") == 0) {
+      tamalib_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
     }
   }
 }
@@ -126,9 +135,9 @@ static void hal_update_screen(void)
   notifyClients();
   
   //TODO auto release after x frames instead of this
-  tamalib_set_button(BTN_LEFT, BTN_STATE_RELEASED);
-  tamalib_set_button(BTN_MIDDLE, BTN_STATE_RELEASED);
-  tamalib_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
+  //tamalib_set_button(BTN_LEFT, BTN_STATE_RELEASED);
+  //tamalib_set_button(BTN_MIDDLE, BTN_STATE_RELEASED);
+  //tamalib_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
 }
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)

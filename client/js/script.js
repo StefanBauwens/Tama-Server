@@ -17,6 +17,14 @@ window.addEventListener('load', onload);
 
 function onload(event) {
     initWebSocket();
+
+    leftBtn.onmousedown     = () => {Send("a-press");};
+    midBtn.onmousedown      = () => {Send("b-press");};
+    rightBtn.onmousedown    = () => {Send("c-press");};
+                                        
+    leftBtn.onmouseup       = () => {Send("a-release");};
+    midBtn.onmouseup        = () => {Send("b-release");};
+    rightBtn.onmouseup      = () => {Send("c-release");};
 }
 
 function initWebSocket() {
@@ -39,7 +47,7 @@ function onClose(event) {
 
 // Function that receives the message from the ESP
 function onMessage(event) {
-    console.log("RECEIVED:" + event.data);
+    //console.log("RECEIVED:" + event.data);
 
     for (let i = 0; i < event.data.length; i++) {
         let val = event.data[i] == '1';
