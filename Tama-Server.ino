@@ -22,7 +22,7 @@ AsyncWebSocket ws("/ws");
 
 void notifyClients()
 { 
-  ws.binaryAll(matrixBufferStr);   
+  ws.binaryAll((uint8_t*)matrixBufferStr, 74); // send as binary
 }
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
@@ -120,6 +120,7 @@ static void hal_update_screen(void)
   //prevMatrixBuffer = matrixBufferStr;
   strcpy(prevMatrixBufferStr, matrixBufferStr);
 
+  /*
   for(int y = 0; y < LCD_HEIGHT; y++)
   {
     for(int x = 0; x < LCD_WIDTH; x++)
@@ -137,31 +138,7 @@ static void hal_update_screen(void)
     Serial.println(); // new line after each row
   }
 
-  Serial.println(matrixBufferStr);
-  /*
-
-  int x = 0;
-  for(int i = 0; i < 74; i++) 
-  {
-    int y = (i * 8) / LCD_WIDTH;
-    char character = matrixBufferStr[i];
-
-    for(int b = 7; b >= 0; b--)
-    {
-      int val = bitRead(character, b);
-      if (val) {
-        Serial.print("█");
-      } else {
-        Serial.print("░");
-      }
-      x++;
-      if (x == LCD_WIDTH) 
-      {
-        Serial.println(); // new line after each row
-        x = 0;
-      }
-    }
-  }*/
+  Serial.println(matrixBufferStr);*/
 
   notifyClients();
 }

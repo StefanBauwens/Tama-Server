@@ -46,11 +46,24 @@ function onClose(event) {
 }
 
 // Function that receives the message from the ESP
-function onMessage(event) {
-    console.log("RECEIVED:");
-    console.log(event.data);
-    const matrix = new Uint8Array(64);
+async function onMessage(event) {
+    const buffer = await event.data.arrayBuffer();
+    const matrixBuffer = new Uint8Array(buffer);
 
+    for(let y = 0; y < LCD_HEIGHT; y++)
+    {
+        for(let x = 0; x < LCD_WIDTH; x++)
+        {
+            let charIndex = Math.floor(((y * LCD_WIDTH) + x) / 7);
+            let rest = ((y * LCD_WIDTH) + x) % 7;
+            let character = matrixBuffer[charIndex];
+            let val = bitRead(character, 6 - rest);
+            ctx.fillStyle = val? '#000000' : '#AAAAAA';
+            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
+        }
+    }
+
+    /*
     let x = 0;
     for(let i = 0; i < 64; i++) {
         let y = (i * 8) / LCD_WIDTH;
@@ -65,7 +78,7 @@ function onMessage(event) {
                 x = 0;
             }
         }
-    }
+    }*/
 
     /*
     for (let i = 0; i < event.data.length; i++) {
