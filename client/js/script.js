@@ -47,19 +47,42 @@ function onClose(event) {
 
 // Function that receives the message from the ESP
 function onMessage(event) {
-    //console.log("RECEIVED:" + event.data);
+    console.log("RECEIVED:");
+    console.log(event.data);
+    const matrix = new Uint8Array(64);
 
+    let x = 0;
+    for(let i = 0; i < 64; i++) {
+        let y = (i * 8) / LCD_WIDTH;
+        let character = String.fromCharCode((event.data.toString().charCodeAt[i] - 48)); //TODO same issues with nul character? //TODO
+
+        for(let b = 7; b >= 0; b--) {
+            let val = bitRead(character, b) == '1';
+            ctx.fillStyle = val? '#000000' : '#AAAAAA';
+            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
+            x++;
+            if (x == LCD_WIDTH) {
+                x = 0;
+            }
+        }
+    }
+
+    /*
     for (let i = 0; i < event.data.length; i++) {
         let val = event.data[i] == '1';
         let x = i%LCD_WIDTH;
         let y = Math.floor(i/LCD_WIDTH);
         ctx.fillStyle = val? '#000000' : '#AAAAAA';
         ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
-    }
+    }*/
 
     Send("ack");
 }
 
 function Send(message) {
     websocket.send(message);
+}
+
+function bitRead(value, n) {
+    return (value >> n) & 1;
 }
