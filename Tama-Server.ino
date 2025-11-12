@@ -107,7 +107,7 @@ static timestamp_t hal_get_timestamp(void) //TODO test
 
 static void hal_sleep_until(timestamp_t ts) //this makes the time be accurate
 {
-  while(micros() < ts) {}
+  while(hal_get_timestamp() < ts) {}
 }
 
 static void hal_update_screen(void)
