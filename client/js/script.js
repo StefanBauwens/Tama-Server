@@ -1,5 +1,6 @@
 const websocketOpenedEvent  = new CustomEvent('websocketOpenedEvent');
-const gateway               = `ws://192.168.0.72/ws`;
+//const gateway               = `ws://192.168.0.72/ws`;
+const gateway               = `wss://tama.yourdomain.org/ws`; // use wss if you want it to work on https, you may need to use a reverse proxy like caddy to make that work
 var websocket;
 
 const pixelSize         = 10;
@@ -62,34 +63,7 @@ async function onMessage(event) {
             ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
         }
     }
-
-    /*
-    let x = 0;
-    for(let i = 0; i < 64; i++) {
-        let y = (i * 8) / LCD_WIDTH;
-        let character = String.fromCharCode((event.data.toString().charCodeAt[i] - 48)); //TODO same issues with nul character? //TODO
-
-        for(let b = 7; b >= 0; b--) {
-            let val = bitRead(character, b) == '1';
-            ctx.fillStyle = val? '#000000' : '#AAAAAA';
-            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
-            x++;
-            if (x == LCD_WIDTH) {
-                x = 0;
-            }
-        }
-    }*/
-
-    /*
-    for (let i = 0; i < event.data.length; i++) {
-        let val = event.data[i] == '1';
-        let x = i%LCD_WIDTH;
-        let y = Math.floor(i/LCD_WIDTH);
-        ctx.fillStyle = val? '#000000' : '#AAAAAA';
-        ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
-    }*/
-
-    Send("ack");
+    Send("ack"); // improves the connection
 }
 
 function Send(message) {
