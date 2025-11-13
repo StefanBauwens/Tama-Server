@@ -9,10 +9,10 @@
 const int BUFFER_SIZE = (LCD_HEIGHT * LCD_WIDTH) / 8;
 
 // screen
-static bool pixelsChanged             = false;
+static bool iconsChanged = false;
 static char matrixBufferStr[75]; // 74 bytes since we'll be only using 7 bits + 1 byte for end
 static char prevMatrixBufferStr[75];
-static bool_t icon_buffer[ICON_NUM]   = {0};
+static uint8_t icon_buffer[ICON_NUM] = {0};
 
 // webserver port 80
 AsyncWebServer server(80);
@@ -20,9 +20,14 @@ AsyncWebSocket ws("/ws");
 
 /* WEBSOCKET STUFF */
 
-void notifyClients()
+void sendScreenToClients()
 { 
   ws.binaryAll((uint8_t*)matrixBufferStr, 74); // send as binary
+}
+
+void sendIconsToClients()
+{ 
+  ws.binaryAll((uint8_t*)icon_buffer, ICON_NUM); // send as binary
 }
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
@@ -55,6 +60,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   switch (type) {
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      sendScreenToClients(); // send initial screen state
       break;
     case WS_EVT_DISCONNECT:
       Serial.printf("WebSocket client #%u disconnected\n", client->id());
@@ -112,6 +118,11 @@ static void hal_sleep_until(timestamp_t ts) //this makes the time be accurate
 
 static void hal_update_screen(void)
 {
+  if (iconsChanged) {
+    iconsChanged = false;
+    sendIconsToClients();
+  }
+
   // check if screen really needs updating
   if (strcmp(matrixBufferStr, prevMatrixBufferStr) == 0)
   {
@@ -140,7 +151,7 @@ static void hal_update_screen(void)
 
   Serial.println(matrixBufferStr);*/
 
-  notifyClients();
+  sendScreenToClients();
 }
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
@@ -150,12 +161,15 @@ static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
   char character = matrixBufferStr[charIndex];
   character = bitWrite(character, 6 - rest, val);
   matrixBufferStr[charIndex] = character;
-  pixelsChanged = true;
 }
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-  icon_buffer[icon] = val;
+  if (icon_buffer[icon] != val) 
+  {
+    icon_buffer[icon] = val;
+    iconsChanged = true;
+  }
 }
 
 static void hal_set_frequency(u32_t freq)

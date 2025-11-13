@@ -48,13 +48,51 @@
                 top: 659px;
                 left: 405px;
             }
+
+            #topIcons {
+                position: absolute;
+                top: 260px;
+                left: 165px;
+            }
+
+            #bottomIcons {
+                position: absolute;
+                top: 510px;
+                left: 169px
+            }
+
+            #topIcons img, #bottomIcons img {
+                width: 75px;
+                filter: invert(86%) sepia(0%) saturate(363%) hue-rotate(134deg) brightness(83%) contrast(81%);
+                opacity: 0.18;
+            }
+            
+            #topIcons img.selected, #bottomIcons img.selected {
+                width: 75px;
+                filter: none;
+                opacity: 1;
+            }
             
         </style>
     </head>
     <body>
         <img id="bgImage" src="img/bg.png">
+
+        <div id="topIcons">
+            <img id="icon1" src="img/icon1.png">
+            <img id="icon2" src="img/icon2.png">
+            <img id="icon3" src="img/icon3.png">
+            <img id="icon4" src="img/icon4.png">
+        </div>
+        <div id="bottomIcons">
+            <img id="icon5" src="img/icon5.png">
+            <img id="icon6" src="img/icon6.png">
+            <img id="icon7" src="img/icon7.png">
+            <img id="icon8" src="img/icon8.png">
+        </div>
+
         <canvas id="canvas" width="320" height="160"></canvas>
-        <br>
+
         <button type="button" class="tamaBtn" id="leftBtn"><img src="img/button-release.png"></button>
         <button type="button" class="tamaBtn" id="midBtn"><img src="img/button-release.png"></button>
         <button type="button" class="tamaBtn" id="rightBtn"><img src="img/button-release.png"></button>

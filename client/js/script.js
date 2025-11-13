@@ -9,6 +9,18 @@ const ctx               = canvas.getContext("2d");
 const leftBtn           = document.getElementById("leftBtn");
 const midBtn            = document.getElementById("midBtn");
 const rightBtn          = document.getElementById("rightBtn");
+
+const icon1             = document.getElementById("icon1");
+const icon2             = document.getElementById("icon2");
+const icon3             = document.getElementById("icon3");
+const icon4             = document.getElementById("icon4");
+const icon5             = document.getElementById("icon5");
+const icon6             = document.getElementById("icon6");
+const icon7             = document.getElementById("icon7");
+const icon8             = document.getElementById("icon8");
+
+const icons             = [icon1, icon2, icon3, icon4, icon5, icon6, icon7, icon8];
+
 const LCD_WIDTH         = 32;
 const LCD_HEIGHT        = 16;
 
@@ -18,13 +30,13 @@ window.addEventListener('load', onload);
 function onload(event) {
     initWebSocket();
 
-    leftBtn.onmousedown     = () => {Send("a-press");};
-    midBtn.onmousedown      = () => {Send("b-press");};
-    rightBtn.onmousedown    = () => {Send("c-press");};
+    leftBtn.onmousedown     = () => {send("a-press");};
+    midBtn.onmousedown      = () => {send("b-press");};
+    rightBtn.onmousedown    = () => {send("c-press");};
                                         
-    leftBtn.onmouseup       = () => {Send("a-release");};
-    midBtn.onmouseup        = () => {Send("b-release");};
-    rightBtn.onmouseup      = () => {Send("c-release");};
+    leftBtn.onmouseup       = () => {delayedSend("a-release");};
+    midBtn.onmouseup        = () => {delayedSend("b-release");};
+    rightBtn.onmouseup      = () => {delayedSend("c-release");};
 }
 
 function initWebSocket() {
@@ -48,26 +60,42 @@ function onClose(event) {
 // Function that receives the message from the ESP
 async function onMessage(event) {
     const buffer = await event.data.arrayBuffer();
-    const matrixBuffer = new Uint8Array(buffer);
+    const messageBuffer = new Uint8Array(buffer);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for(let y = 0; y < LCD_HEIGHT; y++)
-    {
-        for(let x = 0; x < LCD_WIDTH; x++)
+    if (messageBuffer.length == 8) { // receive icon
+        for(let i = 0; i < messageBuffer.length; i++) {
+            if(messageBuffer[i] == 1) {
+                icons[i].classList.add("selected");
+            } else {
+                icons[i].classList.remove("selected");
+            }
+        }
+    } else { // receive screen
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for(let y = 0; y < LCD_HEIGHT; y++)
         {
-            let charIndex = Math.floor(((y * LCD_WIDTH) + x) / 7);
-            let rest = ((y * LCD_WIDTH) + x) % 7;
-            let character = matrixBuffer[charIndex];
-            let val = bitRead(character, 6 - rest);
-            ctx.fillStyle = val? '#000000' : '#aaaaaa2f';
-            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
+            for(let x = 0; x < LCD_WIDTH; x++)
+            {
+                let charIndex = Math.floor(((y * LCD_WIDTH) + x) / 7);
+                let rest = ((y * LCD_WIDTH) + x) % 7;
+                let character = messageBuffer[charIndex];
+                let val = bitRead(character, 6 - rest);
+                ctx.fillStyle = val? '#000000' : '#aaaaaa2f';
+                ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
+            }
         }
     }
-    Send("ack"); // improves the connection
+    send("ack"); // improves the connection
 }
 
-function Send(message) {
+function send(message) {
     websocket.send(message);
+}
+
+function delayedSend(message) { // helps with buttons
+    setTimeout(() => {
+        send(message);
+    }, 100);
 }
 
 function bitRead(value, n) {
