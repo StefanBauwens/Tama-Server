@@ -60,6 +60,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   switch (type) {
     case WS_EVT_CONNECT:
       Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      sendIconsToClients(); // send intial icon state
       sendScreenToClients(); // send initial screen state
       break;
     case WS_EVT_DISCONNECT:
@@ -184,6 +185,7 @@ static void hal_play_frequency(bool_t en)
 
 static int hal_handler(void)
 {
+  /*
   if(Serial.available() > 0)
   {
     char incomingVal = Serial.read();
@@ -203,7 +205,7 @@ static int hal_handler(void)
       Serial.print("right");
       tamalib_set_button(BTN_RIGHT, BTN_STATE_PRESSED);
     }
-  }
+  }*/
   return 0; //TODO
 }
 
