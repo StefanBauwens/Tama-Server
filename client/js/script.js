@@ -1,5 +1,4 @@
 const websocketOpenedEvent  = new CustomEvent('websocketOpenedEvent');
-//const gateway               = `ws://192.168.0.72/ws`;
 const gateway               = `wss://tama.yourdomain.org/ws`; // use wss if you want it to work on https, you may need to use a reverse proxy like caddy to make that work
 var websocket;
 
@@ -51,6 +50,7 @@ async function onMessage(event) {
     const buffer = await event.data.arrayBuffer();
     const matrixBuffer = new Uint8Array(buffer);
 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let y = 0; y < LCD_HEIGHT; y++)
     {
         for(let x = 0; x < LCD_WIDTH; x++)
@@ -59,7 +59,7 @@ async function onMessage(event) {
             let rest = ((y * LCD_WIDTH) + x) % 7;
             let character = matrixBuffer[charIndex];
             let val = bitRead(character, 6 - rest);
-            ctx.fillStyle = val? '#000000' : '#AAAAAA';
+            ctx.fillStyle = val? '#000000' : '#aaaaaa2f';
             ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
         }
     }

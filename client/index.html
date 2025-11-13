@@ -2,13 +2,62 @@
 <html>
     <head>
         <title>Tama client</title>
+        <style>
+            #bgImage { 
+                position:absolute; 
+                z-index: -1;
+                width: 625px;
+            }
+            
+            #canvas {
+                position:absolute;
+                top: 334px;
+                left: 160px;
+            }
+
+            .tamaBtn {
+                border: none;
+                appearance: none;
+                background-color: inherit;
+            }
+
+            .tamaBtn img {
+                width: 67px;
+                content: url("img/button-release.png");
+            }
+
+            .tamaBtn:active img {
+                width: 67px;
+                content: url("img/button-press.png");
+            }
+
+            #leftBtn {
+                position: absolute;
+                top: 659px;
+                left: 165px;
+            }
+
+            #midBtn {
+                position: absolute;
+                top: 680px;
+                left: 285px;
+            }
+
+            #rightBtn {
+                position: absolute;
+                top: 659px;
+                left: 405px;
+            }
+            
+        </style>
     </head>
     <body>
+        <img id="bgImage" src="img/bg.png">
         <canvas id="canvas" width="320" height="160"></canvas>
         <br>
-        <button type="button" id="leftBtn">A</button>
-        <button type="button" id="midBtn">B</button>
-        <button type="button" id="rightBtn">C</button>
+        <button type="button" class="tamaBtn" id="leftBtn"><img src="img/button-release.png"></button>
+        <button type="button" class="tamaBtn" id="midBtn"><img src="img/button-release.png"></button>
+        <button type="button" class="tamaBtn" id="rightBtn"><img src="img/button-release.png"></button>
         
         <script src="js/script.js"></script>
     </body>
