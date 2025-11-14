@@ -67,6 +67,10 @@ Audio isn't implemented (yet?)
 
 The ESP32 does not save the state or anything so if it loses power it will reset, so it may be worthwhile to add something there or at least send the state over to the client. 
 
+## Additional info
+
+Some of the images used were extracted from the Tamagotchi Classic - Gen 1 APK
+
 ## License
 
 TamaLIB is distributed under the GPLv2 license. See the LICENSE file for more information.
