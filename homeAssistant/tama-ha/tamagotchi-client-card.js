@@ -9,7 +9,7 @@ class TamagotchiClientCard extends HTMLElement {
         // Initialize the content if it's not there yet.
         if (!this.content) {
             this.innerHTML = `
-                <ha-card header="Tamagotchi">
+                <ha-card>
                     <style>
                         #bgImage { 
                             position:absolute; 
@@ -19,8 +19,8 @@ class TamagotchiClientCard extends HTMLElement {
                         
                         #canvas {
                             position:absolute;
-                            top: 326px;
-                            left: 152px;
+                            top: 342px;
+                            left: 168px;
                         }
 
                         .tamaBtn {
@@ -41,32 +41,32 @@ class TamagotchiClientCard extends HTMLElement {
 
                         #leftBtn {
                             position: absolute;
-                            top: 651px;
-                            left: 157px;
+                            top: 667px;
+                            left: 173px;
                         }
 
                         #midBtn {
                             position: absolute;
-                            top: 672px;
-                            left: 277px;
+                            top: 688px;
+                            left: 293px;
                         }
 
                         #rightBtn {
                             position: absolute;
-                            top: 651px;
-                            left: 397px;
+                            top: 667px;
+                            left: 413px;
                         }
 
                         #topIcons {
                             position: absolute;
-                            top: 252px;
-                            left: 157px;
+                            top: 268px;
+                            left: 173px;
                         }
 
                         #bottomIcons {
                             position: absolute;
-                            top: 502px;
-                            left: 161px
+                            top: 518px;
+                            left: 177px
                         }
 
                         #topIcons img, #bottomIcons img {
@@ -84,9 +84,19 @@ class TamagotchiClientCard extends HTMLElement {
                         #tamagotchi {
                             position: relative;
                             left: 0px;
-                            scale: 1;
-                            transform-origin: left center;
-                            width: 600px;
+                            transform-origin: left top;
+                            width: 625px;
+                            height: 450px;
+                            padding: 16px;
+                        }
+                        
+                        .card-content {
+                            position: relative;
+                            //width: 100%;
+                            margin: 0px;
+                            padding: 0px;
+                            aspect-ratio: 0.82;
+                            overflow: hidden;
                         }
                     </style>
 
@@ -117,6 +127,7 @@ class TamagotchiClientCard extends HTMLElement {
                 </ha-card>
             `;
             
+            this.tamagotchi         = this.querySelector("#tamagotchi");
             this.content            = this.querySelector(".card-content");
             this.canvas             = this.querySelector("canvas");
             this.ctx                = this.canvas.getContext("2d");
@@ -146,6 +157,10 @@ class TamagotchiClientCard extends HTMLElement {
 
             this.gateway = this.config.gateway;
             this.initWebSocket();
+
+            // handle auto resizing
+            setTimeout(() => this.updateScale(), 50);
+            window.addEventListener("resize", () => this.updateScale());
         }
     }
 
@@ -210,6 +225,21 @@ class TamagotchiClientCard extends HTMLElement {
         return (value >> n) & 1;
     }
 
+    updateScale() {
+        const container = this.content;
+        const tama = this.tamagotchi;
+
+        if (!container || !tama) return;
+
+        const designWidth = 625;
+        const designScale = 0.95;
+
+        const availableWidth = container.clientWidth;
+        const scale = availableWidth / designWidth * designScale;
+        
+        tama.style.transform = `scale(${scale})`;
+    }
+
     /* HA stuff */
 
     // The user supplied configuration. Throw an exception and Home Assistant
@@ -224,16 +254,16 @@ class TamagotchiClientCard extends HTMLElement {
     // The height of your card. Home Assistant uses this to automatically
     // distribute all cards over the available columns in masonry view
     getCardSize() {
-            return 5;
+            return 10;
     }
 
     // The rules for sizing your card in the grid in sections view
     getGridOptions() {
         return {
             rows: 3,
-            columns: 6,
+            columns: 1,
             min_rows: 3,
-            max_rows: 3,
+            max_rows: 10,
         };
     }
 }
