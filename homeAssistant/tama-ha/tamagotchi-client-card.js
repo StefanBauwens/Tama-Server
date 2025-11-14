@@ -178,10 +178,20 @@ class TamagotchiClientCard extends HTMLElement {
 
     onClose(event) {
         console.log('Connection closed');
-        setTimeout(() => this.initWebSocket(), 2000);
+        setTimeout(() => {
+            if (this.isConnected) {
+                this.initWebSocket();
+            } else {
+                console.log("Card no longer connected! Skipping reconnect");
+            }
+        }, 2000);
     }
 
     async onMessage(event) {
+        if (!this.isConnected) {
+            this.websocket.close();
+        }
+
         const buffer = await event.data.arrayBuffer();
         const messageBuffer = new Uint8Array(buffer);
 
