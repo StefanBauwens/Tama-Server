@@ -1,5 +1,6 @@
 const websocketOpenedEvent  = new CustomEvent('websocketOpenedEvent');
 const gateway               = `wss://tama.yourdomain.org/ws`; // use wss if you want it to work on https, you may need to use a reverse proxy like caddy to make that work
+//const gateway		    = `ws://192.168.0.72/ws`; // or use ws on LAN
 var websocket;
 
 const pixelSize         = 10;
