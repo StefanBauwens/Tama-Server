@@ -1,65 +1,61 @@
-# TamaLIB - A hardware agnostic first-gen Tamagotchi emulation library
+# Tama-Server ESP32
+
+This uses TamaLIB to host a tamagotchi server on your ESP32. Using WebSockets you can then connect to it and remotely interact with your Tamagotchi.
+
+## Included:
+
+### Tama-Server Arduino project (Tama-Server.ino)
+
+Use this to flash your ESP32. Before doing so you will need a rom.h and secrets.h file. Templates are included. 
+
+For getting a rom you can follow the instructions here: https://github.com/jcrona/mcugotchi/
+
+Rename the secrets.h.template to secrets.h and fill in your WiFi credentials.
+
+Once flashed you can check the serial monitor for your IP address. You may need to press the reset button on your ESP32 if it doesn't show first try.
 
 
-## Synopsis
+### HTML/JS Tama client (html/index.html & html/js/script.js)
 
-TamaLib is a hardware agnostic first-gen Tamagotchi (E0C6S46/8 based) emulation library built from scratch. It is self-contained and aims at running on any platform powerful enough, from microcontrollers (MCUs) to desktop computers, thus spreading virtual life across the digital world.
+To get this working modify the gateway variable in script.js to connect to your ESP32. If you're just testing locally you can use `ws://YOUR_ESP_IP/ws`.
 
-So far, it has been successfully implemented on different platforms:
-- Desktop computers (check out [TamaTool](https://github.com/jcrona/tamatool/) for more information) 
-- STM32F072 MCU based board (check out [MCUGotchi](https://github.com/jcrona/mcugotchi/) for more information).
-- OpenTama which is an STM32L072 MCU based board (check out [OpenTama](https://github.com/Sparkr-tech/opentama) and [MCUGotchi](https://github.com/jcrona/mcugotchi/) for more information).
-- Arduino UNO (check out [ArduinoGotchi](https://github.com/GaryZ88/ArduinoGotchi/) for more information).
-- A web app powered by Python/JS (check out [Pygotchi](https://github.com/Almarch/pygotchi) for more information).
-- Palm OS (check out [TamagotchiPalmOS](https://github.com/JOBBIN9422/TamagotchiPalmOS) for more information).
+If you want to run this from a https website you need to use wss instead. To get that working you need to figure out a way to make the connection secure. 
 
+In my specific case I am hosting my website on the same network and was able to set up reverse proxy to my device using Caddy doing something like this in my caddy file:
 
-## Importing TamaLIB
-
-TamaLIB cannot be used as is. In order to create life on a specific target, you need to import all TamaLIB related __.c__ and __.h__ files in your project (for instance in a __lib__ subfolder), to create a __hal_types.h__ file using the template provided and to implement the __hal_t__ structure, that will act as an abstraction layer between TamaLIB and your OS or SDK (detailed information can be found in __hal.h__). This abstraction layer basically connects TamaLIB to your target's buttons, clock, audio and screen, while also defining the C types that TamaLIB should use to represent 4-bit, 5-bit, 8-bit, 12-bit, 13-bit and 32-bit variables. Once done, you will be able to call the TamaLIB API from your project.
-
-
-## Using the TamaLIB API
-
-Basically:
 ```
-/* ... */
-
-/* Register the HAL */
-tamalib_register_hal(&my_hal);
-
-/* ... */
-
-/* Initialize TamaLIB */
-tamalib_init(my_program, my_breakpoints, 1000000); // my_breakpoints can be NULL, 1000000 means that timestamps will be expressed in us
-
-/* ... */
-
-/* Enter TamaLIB's loop */
-tamalib_mainloop();
-
-/* ... */
-
-/* Release TamaLIB */
-tamalib_release();
-
-/* ... */
+tamagotchi.mydomain.com {
+	reverse_proxy 192.168.0.72
+}
 ```
-Your main project should then forward any button input to TamaLIB using the `tamalib_set_button()` function.
 
-As an alternative to `tamalib_mainloop()`, you can call `tamalib_step()` directly if your execution flow requires something more complex than a simple mainloop. In that case, TamaLIB will neither call the HAL `handler()` function, nor the HAL `update_screen()` function by itslef.
+Then you can use `wss://tamagotchi.mydomain.com/ws` as your gateway variable.
+
+Opening the index.html should now correctly stream your tamagotchi ESP server.
+
+
+### Custom Home Assistant Client card (homeAssistant/tama-ha)
+
+If you want to have a tamagotchi client as a card on your HA dashboard you can!
+
+Move the entire tama-ha folder to `<HA config folder>/www/tama-ha`
+
+Then in HA go to Settings > Dashboards and click Resources from the top right menu.
+
+Add new resource to `/local/tama-ha/tamagotchi-client-card.js`
+
+Then, to add it to your dashboard, edit the raw configuration file like so:
+
+```
+views:
+  - name: Tama
+    cards:
+      - type: custom:tamagotchi-client-card
+        gateway: wss://tamagotchi.mydomain.com/ws
+```
 
 
 ## License
 
 TamaLIB is distributed under the GPLv2 license. See the LICENSE file for more information.
 
-
-## Hardware information
-
-The Tamagotchi P1 and P2 are based on an [E0C6S46 Epson MCU](https://download.epson-europe.com/pub/electronics-de/asmic/4bit/62family/technicalmanual/tm_6s46.pdf), and runs at 32,768 kHz, while the Tamagotchi Angel, Umino (Ocean), Morino (Forest), Mothra, Tamaotch and Genjintch are based on an [E0C6S48 Epson MCU](https://download.epson-europe.com/pub/electronics-de/asmic/4bit/62family/technicalmanual/tm_6s48.pdf) running at 32,768 kHz and 1 MHz. Their LCDs are all 32x16 B/W pixels, with 8 icons. 
-To my knowledge, the P1 ROM available online has been extracted from a high-res picture of a die. The ROM mask was clear enough to be optically read. The pictures can be seen [there](https://siliconpr0n.org/map/bandai/tamagotchi-v1/) (thx asterick for the link!).  
-~~I would love to see the same work done on a P2 and add support for it in TamaLIB/TamaTool!~~ Someone did the same job for the P2 and other first-gen devices!
-
-__  
-Copyright (C) 2025 Jean-Christophe Rona
