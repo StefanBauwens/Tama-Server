@@ -3,7 +3,7 @@
 This uses <a href="https://github.com/jcrona/tamalib">TamaLIB</a> to host a tamagotchi server on your ESP32. Using WebSockets you can then connect to it and remotely interact with your Tamagotchi.
 This can be useful to run a tamagotchi on clients where it's tricky/impossible to have a tamagotchi running constantly (in the background). This way the tamagotchi will keep running even when your client app closes just as you probably would want it to. 
 
-<p><img src="img/client.png" width="20%" alt="Tamagotchi client card for Home Assistant"/></p>
+<p><img src="img/client.png" width="30%" alt="Tamagotchi client card for Home Assistant"/></p>
 <sup>Home Assistant client card that let you interact with the Tamagotchi server running on an ESP32</sup>
 
 ## Included:
