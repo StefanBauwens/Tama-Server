@@ -48,7 +48,7 @@ Then in HA go to Settings > Dashboards and click Resources from the top right me
 
 Add new resource to `/local/tama-ha/tamagotchi-client-card.js`
 
-Then, to add it to your dashboard, edit the raw configuration file like so:
+Then, to add it to your dashboard, edit the raw configuration file to something like this:
 
 ```
 views:
