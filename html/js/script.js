@@ -1,6 +1,6 @@
 const websocketOpenedEvent  = new CustomEvent('websocketOpenedEvent');
-const gateway               = `wss://tama.yourdomain.org/ws`; // use wss if you want it to work on https, you may need to use a reverse proxy like caddy to make that work
-//const gateway		    = `ws://192.168.0.72/ws`; // or use ws on LAN
+//const gateway               = `wss://tama.yourdomain.org/ws`; // use wss if you want it to work on https, you may need to use a reverse proxy like caddy to make that work
+const gateway		    = `ws://192.168.0.72/ws`; // or use ws on LAN
 var websocket;
 
 const pixelSize         = 10;
@@ -60,8 +60,7 @@ function onClose(event) {
 
 // Function that receives the message from the ESP
 async function onMessage(event) {
-    const buffer = await event.data.arrayBuffer();
-    const messageBuffer = new Uint8Array(buffer);
+    const messageBuffer = event.data;
 
     if (messageBuffer.length == 8) { // receive icon
         for(let i = 0; i < messageBuffer.length; i++) {
@@ -77,10 +76,8 @@ async function onMessage(event) {
         {
             for(let x = 0; x < LCD_WIDTH; x++)
             {
-                let charIndex = Math.floor(((y * LCD_WIDTH) + x) / 7);
-                let rest = ((y * LCD_WIDTH) + x) % 7;
-                let character = messageBuffer[charIndex];
-                let val = bitRead(character, 6 - rest);
+                let charIndex = (y * LCD_WIDTH) + x;
+                let val = messageBuffer[charIndex] == '1';
                 ctx.fillStyle = val? '#000000' : '#aaaaaa2f';
                 ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize - 1 , pixelSize - 1);
             }

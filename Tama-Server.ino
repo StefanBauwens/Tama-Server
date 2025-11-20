@@ -10,9 +10,9 @@ const int BUFFER_SIZE = (LCD_HEIGHT * LCD_WIDTH) / 8;
 
 // screen
 static bool iconsChanged = false;
-static char matrixBufferStr[75]; // 74 bytes since we'll be only using 7 bits + 1 byte for end
-static char prevMatrixBufferStr[75];
-static uint8_t icon_buffer[ICON_NUM] = {0};
+static char matrixBufferStr[513]; // 32*16 + 1(NULL end)
+static char prevMatrixBufferStr[513];
+static char icon_buffer[ICON_NUM + 1] = "00000000";
 
 // webserver port 80
 AsyncWebServer server(80);
@@ -22,12 +22,12 @@ AsyncWebSocket ws("/ws");
 
 void sendScreenToClients()
 { 
-  ws.binaryAll((uint8_t*)matrixBufferStr, 74); // send as binary
+  ws.textAll(matrixBufferStr);
 }
 
 void sendIconsToClients()
 { 
-  ws.binaryAll((uint8_t*)icon_buffer, ICON_NUM); // send as binary
+  ws.textAll(icon_buffer);
 }
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
@@ -129,7 +129,6 @@ static void hal_update_screen(void)
   {
     return;
   }
-  //prevMatrixBuffer = matrixBufferStr;
   strcpy(prevMatrixBufferStr, matrixBufferStr);
 
   /*
@@ -157,18 +156,16 @@ static void hal_update_screen(void)
 
 static void hal_set_lcd_matrix(u8_t x, u8_t y, bool_t val)
 {
-  int charIndex = ((y * LCD_WIDTH) + x) / 7; // auto floors
-  int rest = ((y * LCD_WIDTH) + x) % 7;
-  char character = matrixBufferStr[charIndex];
-  character = bitWrite(character, 6 - rest, val);
-  matrixBufferStr[charIndex] = character;
+  int charIndex = (y * LCD_WIDTH) + x;
+  matrixBufferStr[charIndex] = val ? '1' : '0';
 }
 
 static void hal_set_lcd_icon(u8_t icon, bool_t val)
 {
-  if (icon_buffer[icon] != val) 
+  char valChar = val ? '1' : '0';
+  if (icon_buffer[icon] != valChar) 
   {
-    icon_buffer[icon] = val;
+    icon_buffer[icon] = valChar;
     iconsChanged = true;
   }
 }
@@ -227,11 +224,11 @@ static hal_t hal = {
 
 void setup() {
   // init matrix
-  memset(matrixBufferStr, 0x80, 74); // fill first 74 bytes with 0x80 (128 decimal) or 1000 0000 binary
-  matrixBufferStr[74] = '\0'; // null terminate it to make it a valid C-string
-  memset(prevMatrixBufferStr, 0x80, 73);
-  prevMatrixBufferStr[73] = '0'; // make it different
-  prevMatrixBufferStr[74] = '\0';
+  memset(matrixBufferStr, 0x30, 512); // fill first 512 bytes with 0x30 (48 decimal) == 0
+  matrixBufferStr[512] = '\0'; // null terminate it to make it a valid C-string
+  memset(prevMatrixBufferStr, 0x30, 511);
+  prevMatrixBufferStr[511] = '1'; // make it different
+  prevMatrixBufferStr[512] = '\0';
 
   Serial.begin(115200);
 
